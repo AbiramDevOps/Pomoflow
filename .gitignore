@@ -1,0 +1,15 @@
+# Ignore VSCode settings
+.vscode/
+
+# Ignore node modules (if you ever use Node)
+node_modules/
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log
+
+# Ignore compiled files (optional)
+dist/

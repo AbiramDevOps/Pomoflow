@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer with PiP</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="timer-wrap">
+        <div class="timer-box">
+            <h1>Pomodoro Timer</h1>
+            <div class="mode-btn">
+                <button id="focus" value="">Focus</button>
+                <button id="SBreak-btn" value="5">Short Break</button>
+                <button id="LBreak-btn" value="15">Long Break</button>
+            </div>
+            <h1 class="timer-display"></h1>
+        </div>
+        <div class="button-box">
+            <button id="start-btn">Start</button>
+            <button id="pause-btn">Pause</button>
+            <button id="stop-btn">Stop</button>
+        </div>
+        <div>
+            <button id="pip">Picture in Picture</button>
+        </div>
+        <div class="inputs">
+            <div>
+                <p>Focus Time(min)</p>
+                <input type="number" name="FocusTime" id="FocusTime" value=25>
+            </div>
+            
+            <div>
+                <p>Short Break(min)</p>
+                <input type="number" name="Sbreak" id="Sbreak" value="5">
+            </div>
+
+            <div>
+                <p>Long Break(min)</p>
+                <input type="number" name="Lbreak" id="Lbreak" value="15">
+            </div>
+            
+            <label>
+                <input type="checkbox" id="auto-toggle">
+                Automatic Session
+            </label>
+
+            <label>
+                <input type="checkbox" id="rain">
+                Rain Noise
+            </label>
+
+            <label>
+                <input type="checkbox" id="thunder">
+                Thunder
+            </label>
+        </div>
+
+        <footer class="footer">
+            <p>
+                Pomoflow &copy; 2025. Project created by <strong>Abiram</strong>. 
+                <a href="https://github.com/AbiramDevOps/Pomoflow" target="_blank" style="color: #f39c12;">GitHub Repo</a>
+                All rights reserved.
+            </p>
+        </footer>
+    </div>
+
+    
+
+    <!-- Picture-in-Picture Elements -->
+    <canvas id="pipCanvas" width="400" height="400" style="display: none;"></canvas>
+    <video id="pipVideo" style="display: none;" width="400" height="400"></video>
+    
+    <div class="pip-controls-container" id="pipControls">
+        <h3>Pomodoro PiP</h3>
+        <div class="pip-mode-display" id="pipModeDisplay">Focus Mode</div>
+        <div class="pip-timer-display" id="pipTimerDisplay">25:00</div>
+        <div class="pip-controls">
+            <button class="pip-control-btn" id="pipStartBtn" title="Start">▶</button>
+            <button class="pip-control-btn" id="pipPauseBtn" title="Pause">⏸</button>
+            <button class="pip-control-btn" id="pipStopBtn" title="Stop">⏹</button>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+
+    <script src="main.js"></script>
+</body>
+</html>

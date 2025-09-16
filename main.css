@@ -1,0 +1,151 @@
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@357&display=swap');
+
+body{
+    font-family: "Bitcount Grid Double", system-ui;
+    font-weight: 200;
+    display: flex;
+    justify-content:center;
+    align-items: center;
+    height: 100vh; /* prende tutta l’altezza dello schermo */
+}
+.timer-wrap{
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+}
+
+.timer-wrap h1{
+    font-size: 3rem;
+}
+
+.timer-display{
+    font-size: 6rem;
+    font-weight: 700;
+}
+
+
+.timer-box, 
+.button-box{
+    margin:20px;
+    text-align: center;
+}
+
+.button-box button{
+    font-weight: bold;
+    border: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 16px;
+    padding-left: 16px;
+    color: white;
+    border-radius: 8px;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 16px 32px;
+    transition: transform 0.2s, filter 0.2s;
+}
+.button-box button:hover {
+    transform: scale(1.1);
+    filter: brightness(1.1);
+}
+
+#start-btn{
+    background-color: rgb(108, 212, 108);
+    
+}
+
+#pause-btn{
+    background-color: rgb(44, 107, 255);
+}
+
+#stop-btn{
+    background-color: rgb(225, 54, 54);
+}
+
+.mode-btn button{
+   font-weight: bold;
+    border: none;
+    color: rgb(0, 0, 0);
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+/* questo non va bene perché cambia lo stile solo quando cliccato */
+/* .mode-btn button:active{
+    background-color: red;
+} */
+
+.mode-btn button.active {
+  background-color: red;
+  color: white;
+}
+
+.pip-controls-container {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(44, 62, 80, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    color: white;
+    z-index: 1000;
+    text-align: center;
+}
+
+.pip-timer-display {
+    font-size: 24px;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.pip-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.pip-control-btn {
+    background: #3498db;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.pip-control-btn:hover {
+    background: #2980b9;
+}
+
+.notification {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2ecc71;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.footer {
+    text-align: center;
+    padding: 15px;
+    background-color: #2c3e50;
+    color: white;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 40px; /* increases the space above the footer */
+    border-radius: 8px 8px 8px 8px; /* optional: slightly rounded top corners */
+}
+
