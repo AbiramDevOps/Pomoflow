@@ -149,3 +149,22 @@ body{
     border-radius: 8px 8px 8px 8px; /* optional: slightly rounded top corners */
 }
 
+#pip{
+    background: #5b4cff;
+    font-weight: bold;
+    border: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
+    color: white;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+#pip:hover {
+    transform: scale(1.1);
+    filter: brightness(1.1);
+}
