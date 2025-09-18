@@ -168,3 +168,25 @@ body{
     transform: scale(1.1);
     filter: brightness(1.1);
 }
+
+@media (max-width:768px) {
+
+    /* Spazio sopra al contenuto */
+    .timer-wrap {
+        margin-top: 40px;  /* il titolo scende un po’ */
+    }
+
+    /* Spazio fra i bottoni principali */
+    .button-box {
+        display: flex;
+        flex-wrap: wrap; /* i bottoni vanno a capo se lo schermo è stretto */
+        gap: 15px;       /* spazio automatico tra i bottoni */
+        justify-content: center;
+    }
+
+    .button-box button {
+        margin: 0;       /* il gap fa già il lavoro */
+    }
+}
+
+
