@@ -173,7 +173,7 @@ body{
 
     /* Spazio sopra al contenuto */
     .timer-wrap {
-        margin-top: 40px;  /* il titolo scende un po’ */
+        margin-top: 100px;  /* il titolo scende un po’ */
     }
 
     /* Spazio fra i bottoni principali */
