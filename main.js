@@ -184,37 +184,96 @@ function activatePip() {
 async function activateInteractivePip() {
     try {
         const pipWindow = await documentPictureInPicture.requestWindow({ width: 400, height: 300 });
-        pipWindow.document.body.innerHTML = "";
-        [...document.styleSheets].forEach((styleSheet) => {
-            try {
-                const cssRules = [...styleSheet.cssRules].map(rule => rule.cssText).join("");
-                const style = document.createElement("style");
-                style.textContent = cssRules;
-                pipWindow.document.head.appendChild(style);
-            } catch {
-                const link = document.createElement("link");
-                link.rel = "stylesheet";
-                link.type = styleSheet.type;
-                link.media = styleSheet.media;
-                link.href = styleSheet.href;
-                pipWindow.document.head.appendChild(link);
-            }
-        });
 
-        const pipContent = document.createElement("div");
-        pipContent.innerHTML = `
-            <div style="text-align:center;padding:20px;background:#2c3e50;color:white;height:100%;">
-                <h3 style="margin:0 0 10px 0;">Pomodoro Timer</h3>
-                <div id="pipWindowMode" style="font-size:14px;margin-bottom:5px;">Focus Mode</div>
-                <div id="pipWindowTimer" style="font-size:32px;font-weight:bold;margin:10px 0;">25:00</div>
-                <div style="display:flex;justify-content:center;gap:10px;">
-                    <button id="pipWindowStart" style="background:#27ae60;border:none;border-radius:50%;width:40px;height:40px;color:white;cursor:pointer;">▶</button>
-                    <button id="pipWindowPause" style="background:#f39c12;border:none;border-radius:50%;width:40px;height:40px;color:white;cursor:pointer;">⏸</button>
-                    <button id="pipWindowStop" style="background:#e74c3c;border:none;border-radius:50%;width:40px;height:40px;color:white;cursor:pointer;">⏹</button>
+        // Font uguale alla pagina principale
+        const fontLink = pipWindow.document.createElement("link");
+        fontLink.rel = "stylesheet";
+        fontLink.href = "https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@357&display=swap";
+        pipWindow.document.head.appendChild(fontLink);
+
+        // CSS dedicato alla PiP: tutto scala con le dimensioni della finestra
+        const style = pipWindow.document.createElement("style");
+        style.textContent = `
+            html, body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                background: #2c3e50;
+                color: white;
+                font-family: "Bitcount Grid Double", system-ui, sans-serif;
+                overflow: hidden;
+            }
+            .pip-root {
+                box-sizing: border-box;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 3vh;
+                padding: 3vh 3vw;
+                text-align: center;
+            }
+            .pip-title {
+                margin: 0;
+                font-size: min(7vw, 8vh);
+                font-weight: 700;
+                white-space: nowrap;
+            }
+            .pip-mode {
+                font-size: min(5vw, 6vh);
+                white-space: nowrap;
+            }
+            .pip-timer {
+                font-size: min(24vw, 32vh);
+                font-weight: 700;
+                line-height: 1;
+                white-space: nowrap;
+            }
+            .pip-buttons {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 3vw;
+            }
+            .pip-buttons button {
+                width: min(14vw, 18vh);
+                height: min(14vw, 18vh);
+                border: none;
+                border-radius: 50%;
+                color: white;
+                cursor: pointer;
+                font-size: min(6vw, 8vh);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                transition: transform 0.2s, filter 0.2s;
+            }
+            .pip-buttons button:hover {
+                transform: scale(1.1);
+                filter: brightness(1.1);
+            }
+            #pipWindowStart { background: #27ae60; }
+            #pipWindowPause { background: #f39c12; }
+            #pipWindowStop  { background: #e74c3c; }
+        `;
+        pipWindow.document.head.appendChild(style);
+
+        pipWindow.document.body.innerHTML = `
+            <div class="pip-root">
+                <h3 class="pip-title">Pomodoro Timer</h3>
+                <div class="pip-mode" id="pipWindowMode">Focus Mode</div>
+                <div class="pip-timer" id="pipWindowTimer">25:00</div>
+                <div class="pip-buttons">
+                    <button id="pipWindowStart" title="Start">▶</button>
+                    <button id="pipWindowPause" title="Pause">⏸</button>
+                    <button id="pipWindowStop" title="Stop">⏹</button>
                 </div>
             </div>
         `;
-        pipWindow.document.body.appendChild(pipContent);
 
         pipWindow.document.getElementById("pipWindowStart").addEventListener("click", startTimer);
         pipWindow.document.getElementById("pipWindowPause").addEventListener("click", pauseTimer);
