@@ -6,7 +6,10 @@ body{
     display: flex;
     justify-content:center;
     align-items: center;
-    height: 100vh; /* prende tutta l’altezza dello schermo */
+    min-height: 100vh;
+    margin: 0;
+    padding: 16px;
+    box-sizing: border-box;
 }
 .timer-wrap{
     display: flex;
@@ -173,7 +176,7 @@ body{
 
     /* Spazio sopra al contenuto */
     .timer-wrap {
-        margin-top: 100px;  /* il titolo scende un po’ */
+        margin-top: 0;
     }
 
     /* Spazio fra i bottoni principali */
@@ -190,3 +193,11 @@ body{
 }
 
 
+
+
+/* --- Mobile fix --- */
+@media (max-width:768px) {
+    .timer-wrap h1 { font-size: 2rem; }
+    .timer-wrap h1.timer-display { font-size: 3rem; }
+    .button-box button { padding: 12px 20px; font-size: 1.2rem; }
+}

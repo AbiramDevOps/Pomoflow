@@ -1,156 +1,18 @@
+/* ==========================================================
+   Pomoflow - main.js
+   ========================================================== */
+
+// ---------- Elementi DOM ----------
 const startBtn = document.querySelector("#start-btn");
 const stopBtn = document.querySelector("#stop-btn");
 const pauseBtn = document.querySelector("#pause-btn");
-
-startBtn.addEventListener("click", startTimer);
-stopBtn.addEventListener("click", stopTimer);
-pauseBtn.addEventListener("click", pauseTimer);
-
-const FocusTime = document.querySelector("#FocusTime");
-FocusTime.addEventListener("change", setTime);
-
-const SBreakTime = document.querySelector("#Sbreak");
-SBreakTime.addEventListener("change", setTime);
-
-const LBreakTime = document.querySelector("#Lbreak");
-LBreakTime.addEventListener("change", setTime);
-
-let Time;
-let isRunning = false;
-let timeId;
-let minutes;
-let seconds;
-let strMinute;
-let strSecond;
-let cicle = 0;
-
-let buttons = document.querySelectorAll(".mode-btn button");
+const timerDisplay = document.querySelector(".timer-display");
+const modeButtons = document.querySelectorAll(".mode-btn button");
 const autoToggle = document.querySelector("#auto-toggle");
 
-buttons.forEach(btn => {
-    btn.addEventListener("click", () => {
-        buttons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        if (btn.id === "focus") Time = FocusTime.value * 60;
-        else if (btn.id === "SBreak-btn") Time = SBreakTime.value * 60;
-        else if (btn.id === "LBreak-btn") Time = LBreakTime.value * 60;
-
-        displayTime();
-        updatePipContent();
-    });
-});
-
-const bell = new Audio("audio/digital.wav");
-bell.preload = "auto";
-
-const focusBtn = document.querySelector("#focus");
-focusBtn.classList.add("active");
-Time = FocusTime.value * 60;
-displayTime();
-
-function setTime() {
-    let activeBtn = document.querySelector(".mode-btn button.active");
-    if (!activeBtn) return;
-
-    if (activeBtn.id === "focus") Time = FocusTime.value * 60;
-    else if (activeBtn.id === "SBreak-btn") Time = SBreakTime.value * 60;
-    else if (activeBtn.id === "LBreak-btn") Time = LBreakTime.value * 60;
-
-    displayTime();
-    updatePipContent();
-}
-
-function nextsession() {
-    if (document.querySelector("#focus").classList.contains("active")) {
-        if ((cicle % 4) === 0) {
-            Time = LBreakTime.value * 60;
-            activateButton("LBreak-btn");
-        } else {
-            Time = SBreakTime.value * 60;
-            activateButton("SBreak-btn");
-        }
-    } else {
-        Time = FocusTime.value * 60;
-        activateButton("focus");
-    }
-    displayTime();
-    updatePipContent();
-    startTimer();
-}
-
-function activateButton(id) {
-    buttons.forEach(b => b.classList.remove("active"));
-    document.querySelector(`#${id}`).classList.add("active");
-    updatePipContent();
-}
-
-function startTimer() {
-    if (isRunning) return;
-    isRunning = true;
-    timeId = setInterval(() => {
-        if (Time <= 0) {
-            cicle++;
-            bell.play();
-            clearInterval(timeId);
-            isRunning = false;
-            if (autoToggle.checked) nextsession();
-            return;
-        }
-        Time--;
-        displayTime();
-        updatePipContent();
-    }, 1000);
-    updatePipContent();
-}
-
-function stopTimer() {
-    isRunning = false;
-    clearInterval(timeId);
-    let activeBtn = document.querySelector(".mode-btn button.active");
-    if (activeBtn.id === "focus") Time = FocusTime.value * 60;
-    else if (activeBtn.id === "SBreak-btn") Time = SBreakTime.value * 60;
-    else if (activeBtn.id === "LBreak-btn") Time = LBreakTime.value * 60;
-
-    displayTime();
-    updatePipContent();
-}
-
-function pauseTimer() {
-    isRunning = false;
-    clearInterval(timeId);
-    updatePipContent();
-}
-
-function displayTime() {
-    minutes = Math.floor(Time / 60);
-    seconds = Time % 60;
-    strMinute = String(minutes).padStart(2, "0");
-    strSecond = String(seconds).padStart(2, "0");
-    document.querySelector(".timer-display").innerHTML = `${strMinute}:${strSecond}`;
-}
-
-const rain = new Audio("audio/rain.mp3");
-rain.loop = true;
-const rain_box = document.querySelector("#rain");
-rain_box.addEventListener("change", () => {
-    if (rain_box.checked) rain.play();
-    else {
-        rain.pause();
-        rain.currentTime = 0;
-    }
-});
-
-const thunder = new Audio("audio/thunder.mp3");
-thunder.loop = true;
-const thunder_box = document.querySelector("#thunder");
-thunder_box.addEventListener("change", () => {
-    if (thunder_box.checked) thunder.play();
-    else {
-        thunder.pause();
-        thunder.currentTime = 0;
-    }
-});
+const FocusTime = document.querySelector("#FocusTime");
+const SBreakTime = document.querySelector("#Sbreak");
+const LBreakTime = document.querySelector("#Lbreak");
 
 const pipButton = document.querySelector("#pip");
 const pipCanvas = document.querySelector("#pipCanvas");
@@ -163,15 +25,194 @@ const pipPauseBtn = document.querySelector("#pipPauseBtn");
 const pipStopBtn = document.querySelector("#pipStopBtn");
 const notification = document.querySelector("#notification");
 
+// ---------- Configurazione modalità ----------
+const MAX_MINUTES = 999;
+const MODES = {
+    "focus":      { label: "Focus Mode",  input: FocusTime,  fallback: 25 },
+    "SBreak-btn": { label: "Short Break", input: SBreakTime, fallback: 5 },
+    "LBreak-btn": { label: "Long Break",  input: LBreakTime, fallback: 15 },
+};
+
+// ---------- Stato ----------
+let currentMode = "focus";
+let remaining = 0;          // secondi rimasti
+let endTime = 0;            // timestamp (ms) di fine sessione
+let isRunning = false;
+let timeId = null;
+let completedFocus = 0;     // numero di sessioni focus completate
+
 let pipCtx = pipCanvas.getContext("2d");
 let pipActive = false;
-let pipInterval = null;
+let pipWindow = null;       // finestra Document PiP (se attiva)
+let notificationTimeout = null;
+
+// ---------- Audio ----------
+const bell = new Audio("audio/digital.wav");
+bell.preload = "auto";
+
+const rain = new Audio("audio/rain.mp3");
+const thunder = new Audio("audio/thunder.mp3");
+
+function playSafe(audio) {
+    const p = audio.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+}
+
+function setupAmbient(audio, checkbox) {
+    audio.loop = true;
+    checkbox.addEventListener("change", () => {
+        if (checkbox.checked) {
+            const p = audio.play();
+            if (p && typeof p.catch === "function") {
+                p.catch(() => {
+                    checkbox.checked = false;
+                    showNotification("Audio blocked by the browser");
+                });
+            }
+        } else {
+            audio.pause();
+            audio.currentTime = 0;
+        }
+    });
+}
+
+// ---------- Helper ----------
+function sanitizeInput(modeId) {
+    const mode = MODES[modeId];
+    let value = parseInt(mode.input.value, 10);
+    if (!Number.isFinite(value) || value < 1) value = mode.fallback;
+    if (value > MAX_MINUTES) value = MAX_MINUTES;
+    mode.input.value = value;
+    return value;
+}
+
+function getDuration(modeId) {
+    return sanitizeInput(modeId) * 60;
+}
+
+function getModeText() {
+    return MODES[currentMode].label;
+}
+
+function formatTime(totalSeconds) {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function render() {
+    const text = formatTime(remaining);
+    timerDisplay.textContent = text;
+    modeButtons.forEach(btn => btn.classList.toggle("active", btn.id === currentMode));
+    document.title = `${text} - ${getModeText()}`;
+    updatePipContent();
+}
+
+function showNotification(message) {
+    notification.textContent = message;
+    notification.style.display = "block";
+    clearTimeout(notificationTimeout);
+    notificationTimeout = setTimeout(() => {
+        notification.style.display = "none";
+    }, 3000);
+}
+
+// ---------- Logica del timer ----------
+function halt() {
+    clearInterval(timeId);
+    timeId = null;
+    isRunning = false;
+}
+
+function setMode(modeId) {
+    halt();
+    currentMode = modeId;
+    remaining = getDuration(modeId);
+    render();
+}
+
+function startTimer() {
+    if (isRunning) return;
+    if (remaining <= 0) remaining = getDuration(currentMode);
+    isRunning = true;
+    endTime = Date.now() + remaining * 1000;
+    timeId = setInterval(tick, 250);
+    render();
+}
+
+function pauseTimer() {
+    if (!isRunning) return;
+    remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+    halt();
+    render();
+}
+
+function stopTimer() {
+    halt();
+    remaining = getDuration(currentMode);
+    render();
+}
+
+function tick() {
+    const msLeft = endTime - Date.now();
+    const secLeft = Math.max(0, Math.ceil(msLeft / 1000));
+    if (secLeft !== remaining) {
+        remaining = secLeft;
+        render();
+    }
+    if (msLeft <= 0) finishSession();
+}
+
+function finishSession() {
+    halt();
+    remaining = 0;
+    bell.currentTime = 0;
+    playSafe(bell);
+    if (currentMode === "focus") completedFocus++;
+    render();
+    if (autoToggle.checked) nextSession();
+}
+
+function nextSession() {
+    let next;
+    if (currentMode === "focus") {
+        // Pausa lunga dopo ogni 4 sessioni focus completate
+        next = (completedFocus % 4 === 0) ? "LBreak-btn" : "SBreak-btn";
+    } else {
+        next = "focus";
+    }
+    setMode(next);
+    startTimer();
+}
+
+// ---------- Eventi ----------
+startBtn.addEventListener("click", startTimer);
+pauseBtn.addEventListener("click", pauseTimer);
+stopBtn.addEventListener("click", stopTimer);
+
+modeButtons.forEach(btn => {
+    btn.addEventListener("click", () => setMode(btn.id));
+});
+
+Object.entries(MODES).forEach(([modeId, mode]) => {
+    mode.input.addEventListener("change", () => {
+        sanitizeInput(modeId);
+        if (modeId === currentMode) stopTimer();
+    });
+});
 
 pipButton.addEventListener("click", activatePip);
 pipStartBtn.addEventListener("click", startTimer);
 pipPauseBtn.addEventListener("click", pauseTimer);
 pipStopBtn.addEventListener("click", stopTimer);
 
+pipVideo.addEventListener("leavepictureinpicture", () => {
+    pipActive = false;
+    pipControls.style.display = "none";
+    showNotification("Picture-in-Picture deactivated");
+});
+
+// ---------- Picture-in-Picture ----------
 function activatePip() {
     if (pipActive) {
         disablePip();
@@ -183,16 +224,16 @@ function activatePip() {
 
 async function activateInteractivePip() {
     try {
-        const pipWindow = await documentPictureInPicture.requestWindow({ width: 400, height: 300 });
+        const win = await documentPictureInPicture.requestWindow({ width: 400, height: 300 });
 
         // Font uguale alla pagina principale
-        const fontLink = pipWindow.document.createElement("link");
+        const fontLink = win.document.createElement("link");
         fontLink.rel = "stylesheet";
         fontLink.href = "https://fonts.googleapis.com/css2?family=Bitcount+Grid+Double:wght@357&display=swap";
-        pipWindow.document.head.appendChild(fontLink);
+        win.document.head.appendChild(fontLink);
 
         // CSS dedicato alla PiP: tutto scala con le dimensioni della finestra
-        const style = pipWindow.document.createElement("style");
+        const style = win.document.createElement("style");
         style.textContent = `
             html, body {
                 margin: 0;
@@ -260,9 +301,9 @@ async function activateInteractivePip() {
             #pipWindowPause { background: #f39c12; }
             #pipWindowStop  { background: #e74c3c; }
         `;
-        pipWindow.document.head.appendChild(style);
+        win.document.head.appendChild(style);
 
-        pipWindow.document.body.innerHTML = `
+        win.document.body.innerHTML = `
             <div class="pip-root">
                 <h3 class="pip-title">Pomodoro Timer</h3>
                 <div class="pip-mode" id="pipWindowMode">Focus Mode</div>
@@ -275,31 +316,22 @@ async function activateInteractivePip() {
             </div>
         `;
 
-        pipWindow.document.getElementById("pipWindowStart").addEventListener("click", startTimer);
-        pipWindow.document.getElementById("pipWindowPause").addEventListener("click", pauseTimer);
-        pipWindow.document.getElementById("pipWindowStop").addEventListener("click", stopTimer);
+        win.document.getElementById("pipWindowStart").addEventListener("click", startTimer);
+        win.document.getElementById("pipWindowPause").addEventListener("click", pauseTimer);
+        win.document.getElementById("pipWindowStop").addEventListener("click", stopTimer);
 
-        const updatePipWindow = () => {
-            const timer = pipWindow.document.getElementById("pipWindowTimer");
-            if (!timer) return;
-            timer.textContent = document.querySelector(".timer-display").textContent;
-            let modeText = "Focus Mode";
-            if (document.querySelector("#SBreak-btn").classList.contains("active")) modeText = "Short Break";
-            else if (document.querySelector("#LBreak-btn").classList.contains("active")) modeText = "Long Break";
-            pipWindow.document.getElementById("pipWindowMode").textContent = modeText;
-        };
-
-        const pipUpdateInterval = setInterval(updatePipWindow, 1000);
-        updatePipWindow();
-
-        pipWindow.addEventListener("pagehide", () => {
-            clearInterval(pipUpdateInterval);
+        win.addEventListener("pagehide", () => {
+            pipWindow = null;
             pipActive = false;
+            showNotification("Picture-in-Picture deactivated");
         });
 
+        pipWindow = win;
         pipActive = true;
+        updatePipContent();
         showNotification("Picture-in-Picture activated");
-    } catch {
+    } catch (err) {
+        pipWindow = null;
         activateVideoPip();
     }
 }
@@ -308,40 +340,45 @@ function activateVideoPip() {
     if (document.pictureInPictureElement) document.exitPictureInPicture();
 
     updatePipCanvas();
-    const stream = pipCanvas.captureStream(15);
-    pipVideo.srcObject = stream;
+    pipVideo.srcObject = pipCanvas.captureStream(15);
 
-    pipVideo.play().then(() => {
-        pipVideo.requestPictureInPicture()
-            .then(() => {
-                pipActive = true;
-                pipControls.style.display = "block";
-                showNotification("Picture-in-Picture activated");
-                pipInterval = setInterval(updatePipContent, 1000);
-            })
-            .catch(() => showNotification("Error: Picture-in-Picture not supported"));
-    });
+    pipVideo.play()
+        .then(() => pipVideo.requestPictureInPicture())
+        .then(() => {
+            pipActive = true;
+            pipControls.style.display = "block";
+            showNotification("Picture-in-Picture activated");
+            updatePipContent();
+        })
+        .catch(() => showNotification("Error: Picture-in-Picture not supported"));
 }
 
 function disablePip() {
+    // Finestra Document PiP: la chiusura attiva "pagehide" che fa la pulizia
+    if (pipWindow) {
+        pipWindow.close();
+        return;
+    }
+    // Video PiP: la pulizia avviene nell'evento "leavepictureinpicture"
     if (document.pictureInPictureElement) {
-        document.exitPictureInPicture().then(() => {
-            pipActive = false;
-            if (pipInterval) clearInterval(pipInterval);
-            pipControls.style.display = "none";
-            showNotification("Picture-in-Picture deactivated");
-        });
+        document.exitPictureInPicture().catch(() => {});
     }
 }
 
 function updatePipContent() {
-    if (pipActive) {
+    if (!pipActive) return;
+    const text = timerDisplay.textContent;
+    const mode = getModeText();
+
+    if (pipWindow) {
+        const timerEl = pipWindow.document.getElementById("pipWindowTimer");
+        const modeEl = pipWindow.document.getElementById("pipWindowMode");
+        if (timerEl) timerEl.textContent = text;
+        if (modeEl) modeEl.textContent = mode;
+    } else {
         updatePipCanvas();
-        pipTimerDisplay.textContent = document.querySelector(".timer-display").textContent;
-        let modeText = "Focus Mode";
-        if (document.querySelector("#SBreak-btn").classList.contains("active")) modeText = "Short Break";
-        else if (document.querySelector("#LBreak-btn").classList.contains("active")) modeText = "Long Break";
-        pipModeDisplay.textContent = modeText;
+        pipTimerDisplay.textContent = text;
+        pipModeDisplay.textContent = mode;
     }
 }
 
@@ -353,13 +390,10 @@ function updatePipCanvas() {
     pipCtx.fillStyle = "white";
     pipCtx.font = "bold 48px Arial";
     pipCtx.textAlign = "center";
-    pipCtx.fillText(document.querySelector(".timer-display").textContent, pipCanvas.width / 2, pipCanvas.height / 2);
+    pipCtx.fillText(timerDisplay.textContent, pipCanvas.width / 2, pipCanvas.height / 2);
 
     pipCtx.font = "16px Arial";
-    let modeText = "Focus Mode";
-    if (document.querySelector("#SBreak-btn").classList.contains("active")) modeText = "Short Break";
-    else if (document.querySelector("#LBreak-btn").classList.contains("active")) modeText = "Long Break";
-    pipCtx.fillText(modeText, pipCanvas.width / 2, pipCanvas.height / 2 + 40);
+    pipCtx.fillText(getModeText(), pipCanvas.width / 2, pipCanvas.height / 2 + 40);
 
     pipCtx.font = "14px Arial";
     pipCtx.fillText(isRunning ? "Running" : "Paused", pipCanvas.width / 2, pipCanvas.height / 2 + 70);
@@ -371,10 +405,8 @@ function updatePipCanvas() {
     pipCtx.stroke();
 }
 
-function showNotification(message) {
-    notification.textContent = message;
-    notification.style.display = "block";
-    setTimeout(() => { notification.style.display = "none"; }, 3000);
-}
-
+// ---------- Inizializzazione ----------
+setupAmbient(rain, document.querySelector("#rain"));
+setupAmbient(thunder, document.querySelector("#thunder"));
+setMode("focus");
 updatePipCanvas();

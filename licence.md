@@ -16,4 +16,4 @@ This project is provided "as-is" without warranty of any kind.
 The author is **not responsible** for any damages, losses, security breaches, or misuse resulting from the use of this project.  
 By using this code, you accept that any consequences of its use are entirely your responsibility.
 
-For commercial licensing inquiries or profit-sharing agreements, contact the author at [satkunaseela.abiram@proton.me]
+For commercial licensing inquiries or profit-sharing agreements, contact the author at [satkunaseelan.abiram@proton.me]

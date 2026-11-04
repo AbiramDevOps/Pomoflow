@@ -13,3 +13,6 @@ Thumbs.db
 
 # Ignore compiled files (optional)
 dist/
+repomix-output.xml
+*.bak
+backup_*/

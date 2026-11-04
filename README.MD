@@ -28,7 +28,7 @@ While there are many Pomodoro timers, Pomoflow stands out with:
 ## 🚀 Features
 
 - **⏰ Classic Pomodoro Technique:** 25-minute focus sessions, 5-minute short breaks, and a 15-minute long break after every 4 cycles.
-- **🎨 Custom PiP Window:** A beautifully rendered Canvas-based timer that appears in a floating PiP window.
+- **🎨 Custom PiP Window:** A beautifully rendered fully resizable timer that appears in a floating PiP window.
 - **🔊 Ambient White Noise:** Toggleable rain and thunder sounds for better concentration.
 - **🔄 Auto Cycle Progression:** Option to automatically move to the next session (focus/break) without manual intervention.
 - **⏯️ Full Controls:** Start, Pause, and Stop functionality with a clear visual countdown.
@@ -56,10 +56,10 @@ Getting started with Pomoflow is incredibly easy.
     ```
 
 **Using PiP Mode:**
-1.  Click the "Enter PiP Mode" button.
+1.  Click the "Picture in Picture" button.
 2.  A floating, draggable timer window will appear.
 3.  You can now work in any other application while Pomoflow stays on top.
-4.  To exit, click the "Exit PiP Mode" button in the main browser tab.
+4.  To exit, click the "Picture in Picture" button again in the main browser tab, or just close the PiP window.
 
 ---
 
@@ -67,8 +67,8 @@ Getting started with Pomoflow is incredibly easy.
 
 - **Frontend:** Vanilla HTML5, CSS3, JavaScript (ES6+)
 - **PiP API:** Experimental Document Picture-in-Picture API
-- **Graphics:** HTML5 Canvas for custom PiP rendering
-- **Audio:** Web Audio API
+- **Graphics:** DOM-based PiP window (Document PiP API), HTML5 Canvas as video-PiP fallback
+- **Audio:** HTML5 Audio (`Audio()` element)
 
 ---
 
